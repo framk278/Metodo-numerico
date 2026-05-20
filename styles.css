@@ -362,12 +362,6 @@ a {
   gap: 18px;
 }
 
-@media (max-width: 820px) {
-  .sim-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .small {
   display: block;
   font-size: 0.8rem;
@@ -635,12 +629,6 @@ th {
   grid-template-columns: repeat(2, 1fr);
 }
 
-@media (max-width: 820px) {
-  .grid-media {
-    grid-template-columns: 1fr;
-  }
-}
-
 .media-split h3 {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
@@ -675,10 +663,6 @@ th {
   grid-column: 1 / -1;
 }
 
-.media-split:not(:has(.body p)) .hero-media {
-  border-radius: 0 0 18px 18px;
-}
-
 .grid-matrix {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -700,12 +684,6 @@ th {
 
 .table-scroll {
   overflow: auto;
-}
-
-@media (max-width: 820px) {
-  .grid-matrix {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ── Pestañas principales (responsive) ─────────────────────────────────── */
@@ -872,4 +850,158 @@ th {
 .chart-show {
   display: block;
   height: 260px;
+}
+
+/* ── Responsive móvil ──────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .header-inner {
+    padding: 12px 14px;
+  }
+
+  .hero {
+    padding: 28px 14px 18px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero p {
+    font-size: 0.98rem;
+  }
+
+  .wrap {
+    padding: 0 14px 22px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .tabs .tab {
+    flex: 0 0 auto;
+    min-width: 110px;
+    white-space: nowrap;
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .grid-media,
+  .grid-matrix,
+  .sim-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card,
+  .sim {
+    border-radius: 16px;
+  }
+
+  .card h3,
+  .sim-head {
+    padding: 14px 16px;
+    font-size: 0.96rem;
+  }
+
+  .body,
+  .sim-body {
+    padding: 16px;
+  }
+
+  .hero-img {
+    height: 200px;
+  }
+
+  .media-split .hero-img {
+    height: 200px;
+  }
+
+  .hero-media {
+    min-height: 200px;
+  }
+
+  .hero-video {
+    max-height: 220px;
+  }
+
+  .chart,
+  .chart-show {
+    height: 220px;
+  }
+
+  .matrix-controls {
+    gap: 10px;
+  }
+
+  .matrix-controls input[type="range"] {
+    min-width: 100%;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 520px;
+  }
+
+  .assistant-toggle {
+    right: 14px;
+    bottom: 14px;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+
+  .assistant-shell {
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+    height: min(70vh, 620px);
+    bottom: 82px;
+  }
+
+  .chat-form {
+    flex-direction: column;
+  }
+
+  .chat-form button {
+    width: 100%;
+  }
+
+  .download {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .download a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .accordion summary {
+    padding: 14px 14px;
+    font-size: 0.98rem;
+  }
+
+  .accordion-body {
+    padding: 0 14px 14px;
+  }
+
+  .theory-intro {
+    padding: 14px;
+  }
+
+  .anim-block {
+    padding: 14px;
+  }
+
+  .msg {
+    max-width: 96%;
+  }
 }

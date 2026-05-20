@@ -1,84 +1,29 @@
-/* =====================================================
-   APP.JS — Versión para GitHub Pages (sin servidor)
-   La IA funciona directamente desde el navegador.
-   ===================================================== */
-
 let trapChart = null,
     flujoChart = null,
     diffErrorChart = null,
     intErrorChart = null;
 
-
-/* =========================
-   TABS
-========================= */
-
 function showTab(i){
-  document
-    .querySelectorAll('.wrap > .panel')
-    .forEach((p,idx)=>
-      p.classList.toggle('active',idx===i)
-    );
-
-
-  document
-    .querySelectorAll('.tabs-main .tab')
-    .forEach((b,idx)=>
-      b.classList.toggle('active',idx===i)
-    );
-
-
-  if(i===2){
-    updateMatrix();
-  }
-
-
-  if(i===3){
-    animateError('diff');
-    animateError('int');
-  }
+  document.querySelectorAll('.wrap > .panel').forEach((p,idx)=>p.classList.toggle('active',idx===i));
+  document.querySelectorAll('.tabs-main .tab').forEach((b,idx)=>b.classList.toggle('active',idx===i));
+  if(i===2){ updateMatrix(); }
+  if(i===3){ animateError('diff'); animateError('int'); }
 }
 
 function showTheoryTab(i){
-  document
-    .querySelectorAll('.theory-panel')
-    .forEach((p,idx)=>
-      p.classList.toggle('active',idx===i)
-    );
-
-
-  document
-    .querySelectorAll('.tabs-sub .tab')
-    .forEach((b,idx)=>
-      b.classList.toggle('active',idx===i)
-    );
-
-
-  setTimeout(() => {
-    animateError(i === 0 ? 'diff' : 'int');
-  }, 50);
+  document.querySelectorAll('.theory-panel').forEach((p,idx)=>p.classList.toggle('active',idx===i));
+  document.querySelectorAll('.tabs-sub .tab').forEach((b,idx)=>b.classList.toggle('active',idx===i));
+  setTimeout(() => { animateError(i === 0 ? 'diff' : 'int'); }, 50);
 }
 
 function toggleTheme(){
   const r = document.documentElement;
-  r.setAttribute(
-    'data-theme',
-    r.getAttribute('data-theme') === 'dark'
-      ? 'light'
-      : 'dark'
-  );
+  r.setAttribute('data-theme', r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
 function toggleAssistant(){
-  document
-    .getElementById('assistantShell')
-    .classList.toggle('open');
+  document.getElementById('assistantShell').classList.toggle('open');
 }
-
-
-/* =========================
-   REGLA DEL TRAPECIO
-========================= */
 
 const defT = {
   tiempo:[0,5,10,15,20],
@@ -86,156 +31,71 @@ const defT = {
 };
 
 function buildTrap(){
-  const n = parseInt(
-    document.getElementById('trap-n').value
-  );
-
-
-  const tb =
-    document.getElementById('trap-body');
-
-
+  const n = parseInt(document.getElementById('trap-n').value);
+  const tb = document.getElementById('trap-body');
   tb.innerHTML='';
-
-
   for(let i=0;i<n;i++){
     const tr = document.createElement('tr');
-
-
     tr.innerHTML=`
       <td>${i+1}</td>
-      <td>
-        <input
-          type="number"
-          step="any"
-          value="${defT.tiempo[i] ?? i*5}"
-          id="tt${i}"
-        >
-      </td>
-      <td>
-        <input
-          type="number"
-          step="any"
-          value="${defT.caudal[i] ?? 1}"
-          id="tc${i}"
-        >
-      </td>
+      <td><input type="number" step="any" value="${defT.tiempo[i] ?? i*5}" id="tt${i}"></td>
+      <td><input type="number" step="any" value="${defT.caudal[i] ?? 1}" id="tc${i}"></td>
     `;
-
-
     tb.appendChild(tr);
   }
 }
 
 function runTrap(){
-  const n = parseInt(
-    document.getElementById('trap-n').value
-  );
-
-
+  const n = parseInt(document.getElementById('trap-n').value);
   const t = [];
   const c = [];
-
-
   for(let i=0;i<n;i++){
-    t.push(
-      parseFloat(
-        document.getElementById(`tt${i}`).value
-      ) || 0
-    );
-
-
-    c.push(
-      parseFloat(
-        document.getElementById(`tc${i}`).value
-      ) || 0
-    );
+    t.push(parseFloat(document.getElementById(`tt${i}`).value) || 0);
+    c.push(parseFloat(document.getElementById(`tc${i}`).value) || 0);
   }
-
 
   const h = t[1]-t[0];
 
-
   for(let i=1;i<n-1;i++){
-    if(
-      Math.abs((t[i+1]-t[i])-h) > 1e-6
-    ){
+    if(Math.abs((t[i+1]-t[i])-h) > 1e-6){
       alert('Los intervalos deben ser iguales');
       return;
     }
   }
-
 
   let s = 0;
   for(let i=1;i<n-1;i++){
     s += c[i];
   }
 
-
   const I = (h/2)*(c[0]+2*s+c[n-1]);
   const V = I*60;
 
+  document.getElementById('trap-results').classList.add('show');
+  document.getElementById('trap-results').innerHTML = `
+    <div class="r"><span>Ancho intervalo</span><strong>${h.toFixed(2)} min</strong></div>
+    <div class="r"><span>Integral</span><strong>${I.toFixed(4)}</strong></div>
+    <div class="r"><span>Volumen total</span><strong>${V.toFixed(2)} m³</strong></div>
+  `;
 
-  document
-    .getElementById('trap-results')
-    .classList.add('show');
-
-
-  document
-    .getElementById('trap-results')
-    .innerHTML = `
-      <div class="r">
-        <span>Ancho intervalo</span>
-        <strong>${h.toFixed(2)} min</strong>
-      </div>
-      <div class="r">
-        <span>Integral</span>
-        <strong>${I.toFixed(4)}</strong>
-      </div>
-      <div class="r">
-        <span>Volumen total</span>
-        <strong>${V.toFixed(2)} m³</strong>
-      </div>
-    `;
-
-
-  document
-    .getElementById('trap-chart-wrap')
-    .style.display='block';
-
-
+  document.getElementById('trap-chart-wrap').style.display='block';
   if(trapChart) trapChart.destroy();
-
-
-  trapChart = new Chart(
-    document.getElementById('trap-chart'),
-    {
-      type:'line',
-      data:{
-        labels:t,
-        datasets:[
-          {
-            label:'Caudal',
-            data:c,
-            borderColor:'#4f8cff',
-            backgroundColor:'rgba(79,140,255,.15)',
-            fill:true,
-            tension:.3
-          }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
-      }
-    }
-  );
+  trapChart = new Chart(document.getElementById('trap-chart'), {
+    type:'line',
+    data:{
+      labels:t,
+      datasets:[{
+        label:'Caudal',
+        data:c,
+        borderColor:'#4f8cff',
+        backgroundColor:'rgba(79,140,255,.15)',
+        fill:true,
+        tension:.3
+      }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
 }
-
-
-/* =========================
-   FLUJO VEHICULAR
-========================= */
 
 const H = [6,7,8,9,10,11,12];
 const defV = [120,180,350,420,300,250,200];
@@ -243,43 +103,24 @@ const defV = [120,180,350,420,300,250,200];
 function buildFlujo(){
   const w = document.getElementById('flujo-inputs');
   w.innerHTML='';
-
-
   H.forEach((h,i)=>{
     const d = document.createElement('div');
     d.style.marginBottom='10px';
-
-
     d.innerHTML=`
       <label class="small">${h}:00</label>
-      <input
-        type="number"
-        id="vh${i}"
-        value="${defV[i]}"
-      >
+      <input type="number" id="vh${i}" value="${defV[i]}">
     `;
-
-
     w.appendChild(d);
   });
 }
 
 function runFlujo(){
-  const v = H.map(
-    (_,i)=>
-      parseFloat(
-        document.getElementById(`vh${i}`).value
-      ) || 0
-  );
-
-
+  const v = H.map((_,i)=>parseFloat(document.getElementById(`vh${i}`).value) || 0);
   const d = new Array(7).fill(0);
-
 
   for(let i=1;i<6;i++){
     d[i]=(v[i+1]-v[i-1])/2;
   }
-
 
   let html='';
   for(let i=1;i<6;i++){
@@ -291,54 +132,27 @@ function runFlujo(){
     `;
   }
 
+  document.getElementById('flujo-results').classList.add('show');
+  document.getElementById('flujo-results').innerHTML = html;
 
-  document
-    .getElementById('flujo-results')
-    .classList.add('show');
-
-
-  document
-    .getElementById('flujo-results')
-    .innerHTML = html;
-
-
-  document
-    .getElementById('flujo-chart-wrap')
-    .style.display='block';
-
-
+  document.getElementById('flujo-chart-wrap').style.display='block';
   if(flujoChart) flujoChart.destroy();
-
-
-  flujoChart = new Chart(
-    document.getElementById('flujo-chart'),
-    {
-      type:'line',
-      data:{
-        labels:H.map(h=>h+':00'),
-        datasets:[
-          {
-            label:'Vehículos/hora',
-            data:v,
-            borderColor:'#9b6dff',
-            backgroundColor:'rgba(155,109,255,.12)',
-            fill:true,
-            tension:.3
-          }
-        ]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false
-      }
-    }
-  );
+  flujoChart = new Chart(document.getElementById('flujo-chart'), {
+    type:'line',
+    data:{
+      labels:H.map(h=>h+':00'),
+      datasets:[{
+        label:'Vehículos/hora',
+        data:v,
+        borderColor:'#9b6dff',
+        backgroundColor:'rgba(155,109,255,.12)',
+        fill:true,
+        tension:.3
+      }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false }
+  });
 }
-
-
-/* =========================
-   MATRICES Y ERRORES
-========================= */
 
 const fx = x => x * x;
 const INT_EXACT = 1 / 3;
@@ -357,36 +171,22 @@ function trapInt(n){
 function simpson13(n){
   const h = 1 / n;
   let s = fx(0) + fx(1);
-
-
   for(let i = 1; i < n; i += 2){
     s += 4 * fx(i * h);
   }
-
-
   for(let i = 2; i < n - 1; i += 2){
     s += 2 * fx(i * h);
   }
-
-
   return (h / 3) * s;
 }
 
 function simpson38(n){
-  if(n % 3 !== 0){
-    return NaN;
-  }
-
-
+  if(n % 3 !== 0) return NaN;
   const h = 1 / n;
   let s = fx(0) + fx(1);
-
-
   for(let i = 1; i < n; i++){
     s += (i % 3 === 0 ? 2 : 3) * fx(i * h);
   }
-
-
   return (3 * h / 8) * s;
 }
 
@@ -398,16 +198,12 @@ function relErr(num, exact){
 function renderMatrixRows(rows, tbodyId){
   let best = Infinity;
 
-
   rows.forEach(r => {
     if(!Number.isNaN(r.num)){
       const e = relErr(r.num, r.exact);
-      if(e < best){
-        best = e;
-      }
+      if(e < best) best = e;
     }
   });
-
 
   document.getElementById(tbodyId).innerHTML =
     rows.map(r => {
@@ -420,10 +216,8 @@ function renderMatrixRows(rows, tbodyId){
         `;
       }
 
-
       const err = relErr(r.num, r.exact);
       const cls = err === best ? ' class="best"' : '';
-
 
       return `
         <tr${cls}>
@@ -438,17 +232,9 @@ function renderMatrixRows(rows, tbodyId){
 }
 
 function updateMatrix(){
-  const n = parseInt(
-    document.getElementById('matrix-n').value,
-    10
-  );
-
-
+  const n = parseInt(document.getElementById('matrix-n').value, 10);
   document.getElementById('matrix-n-val').textContent = n;
-
-
   const h = 1 / n;
-
 
   const intRows = [
     { name:'Trapecio compuesto', num: trapInt(n), exact: INT_EXACT, evals: n + 1 },
@@ -456,13 +242,11 @@ function updateMatrix(){
     { name:'Simpson 3/8', num: n % 3 === 0 ? simpson38(n) : NaN, exact: INT_EXACT, evals: n + 1 }
   ];
 
-
   const derRows = [
     { name:'Dif. progresiva', num:(fx(X0+h)-fx(X0))/h, exact:DER_EXACT, evals:2 },
     { name:'Dif. regresiva', num:(fx(X0)-fx(X0-h))/h, exact:DER_EXACT, evals:2 },
     { name:'Dif. centrada', num:(fx(X0+h)-fx(X0-h))/(2*h), exact:DER_EXACT, evals:2 }
   ];
-
 
   renderMatrixRows(intRows,'matrix-body-int');
   renderMatrixRows(derRows,'matrix-body-der');
@@ -472,12 +256,7 @@ function animateError(kind){
   const isDiff = kind === 'diff';
   const canvasId = isDiff ? 'chart-diff-error' : 'chart-int-error';
 
-
-  const hs = Array.from(
-    {length:40},
-    (_,i)=>0.01 + (0.49*i)/39
-  );
-
+  const hs = Array.from({length:40}, (_,i)=>0.01 + (0.49*i)/39);
 
   const datasets = isDiff
     ? [{
@@ -490,7 +269,6 @@ function animateError(kind){
         data:hs.map(h=>({ x:h, y:h*h*100 })),
         borderColor:'#9b6dff'
       }];
-
 
   const opts = {
     type:'line',
@@ -506,7 +284,6 @@ function animateError(kind){
     }
   };
 
-
   if(isDiff){
     if(diffErrorChart) diffErrorChart.destroy();
     diffErrorChart = new Chart(document.getElementById(canvasId), opts);
@@ -516,17 +293,11 @@ function animateError(kind){
   }
 }
 
-
-/* =========================
-   CHAT IA — VERSION GITHUB PAGES
-   + Filtro de temas permitidos
-========================= */
-
 const chatBox = document.getElementById('chatBox');
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
 
-const GROQ_API_KEY = "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"; // ⚠️ Expuesto en el cliente
+const GROQ_API_KEY = "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";
 
 function addMessage(text, role='bot'){
   const div = document.createElement('div');
@@ -535,8 +306,6 @@ function addMessage(text, role='bot'){
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-// === Filtro de temas permitidos ===
 
 chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -547,110 +316,40 @@ chatForm.addEventListener('submit', async (e) => {
   addMessage(q,'user');
   userInput.value='';
 
-  // =========================
-  // FILTRO DE TEMAS PERMITIDOS
-  // =========================
-
   const lowerQ = q.toLowerCase();
 
-  // Saludos y comandos básicos permitidos
   const basicCommands = [
-    'hola',
-    'hello',
-    'hi',
-    'buenas',
-    'qué tal',
-    'que tal',
-    'como estas',
-    'cómo estás',
-    'gracias',
-    'adiós',
-    'adios',
-    'bye',
-    'nos vemos',
-    'buenos días',
-    'buenas tardes',
-    'buenas noches'
+    'hola','hello','hi','buenas','qué tal','que tal','como estas','cómo estás',
+    'gracias','adiós','adios','bye','nos vemos','buenos días','buenas tardes','buenas noches'
   ];
 
-  // Palabras relacionadas a métodos numéricos
   const allowedTopics = [
-    'métodos numéricos',
-    'metodos numericos',
-    'trapecio',
-    'regla del trapecio',
-    'simpson',
-    'simpson 1/3',
-    'simpson 3/8',
-    'integración numérica',
-    'integracion numerica',
-    'integral',
-    'derivada',
-    'derivadas',
-    'diferencias finitas',
-    'flujo vehicular',
-    'error numérico',
-    'error numerico',
-    'matriz',
-    'matrices',
-    '.m',
-    'matlab',
-    'octave',
-    'caudal',
-    'interpolación',
-    'interpolacion',
-    'aproximación',
-    'aproximacion',
-    'método',
-    'metodo'
+    'métodos numéricos','metodos numericos','trapecio','regla del trapecio','simpson',
+    'simpson 1/3','simpson 3/8','integración numérica','integracion numerica','integral',
+    'derivada','derivadas','diferencias finitas','flujo vehicular','error numérico',
+    'error numerico','matriz','matrices','.m','matlab','octave','caudal','interpolación',
+    'interpolacion','aproximación','aproximacion','método','metodo'
   ];
 
-  const isBasic =
-    basicCommands.some(cmd => lowerQ.includes(cmd));
+  const isBasic = basicCommands.some(cmd => lowerQ.includes(cmd));
+  const isAllowed = allowedTopics.some(topic => lowerQ.includes(topic));
 
-  const isAllowed =
-    allowedTopics.some(topic => lowerQ.includes(topic));
-
-  // Si NO es saludo ni tema permitido
   if(!isBasic && !isAllowed){
-    addMessage(
-      '⚠️ Solo puedo responder preguntas relacionadas con métodos numéricos, integración, derivadas numéricas, diferencias finitas y el contenido de esta página.',
-      'bot'
-    );
+    addMessage('⚠️ Solo puedo responder preguntas relacionadas con métodos numéricos, integración, derivadas numéricas, diferencias finitas y el contenido de esta página.', 'bot');
     return;
   }
 
-  // =========================
-  // RESPUESTAS BÁSICAS
-  // =========================
-
   if(isBasic && !isAllowed){
-
     if(lowerQ.includes('hola') || lowerQ.includes('buenas')){
-      addMessage(
-        '¡Hola! 👋 ¿Necesitas ayuda con métodos numéricos?',
-        'bot'
-      );
+      addMessage('¡Hola! 👋 ¿Necesitas ayuda con métodos numéricos?', 'bot');
       return;
     }
-
     if(lowerQ.includes('gracias')){
-      addMessage(
-        '¡Con gusto! 😊',
-        'bot'
-      );
+      addMessage('¡Con gusto! 😊', 'bot');
       return;
     }
-
-    if(
-      lowerQ.includes('adiós') ||
-      lowerQ.includes('adios') ||
-      lowerQ.includes('bye')
-    ){
-      addMessage(
-        '¡Hasta luego! 👋',
-        'bot'
-      );
+    if(lowerQ.includes('adiós') || lowerQ.includes('adios') || lowerQ.includes('bye')){
+      addMessage('¡Hasta luego! 👋', 'bot');
       return;
     }
   }
@@ -661,7 +360,6 @@ chatForm.addEventListener('submit', async (e) => {
   chatBox.appendChild(thinking);
 
   try {
-    // Llamada directa a Groq API desde el navegador
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -682,7 +380,6 @@ Tu tarea es explicar y responder preguntas sobre:
 - Comparación de métodos y errores
 - Los archivos .m de esta página
 
-
 IMPORTANTE: Si el usuario pregunta sobre cualquier otro tema que no esté relacionado con métodos numéricos, debes responder educadamente:
 
 "⚠️ Solo puedo ayudarte con temas de métodos numéricos y el contenido de esta página. ¿Tienes alguna pregunta sobre integrales, derivadas numéricas o los programas aquí incluidos?"
@@ -697,16 +394,13 @@ NO respondas a preguntas sobre otros temas aunque el usuario insista.`
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
     const data = await response.json();
     const answer = data?.choices?.[0]?.message?.content?.trim() || 'No hubo respuesta.';
 
     thinking.remove();
     addMessage(answer, 'bot');
-
   } catch(err) {
     thinking.remove();
     console.error('Error chat:', err);
@@ -714,16 +408,10 @@ NO respondas a preguntas sobre otros temas aunque el usuario insista.`
   }
 });
 
-
-/* =========================
-   LIGHTBOX
-========================= */
-
 function initImageLightbox(){
   const dialog = document.getElementById('imageLightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   const closeBtn = dialog.querySelector('.lightbox-close');
-
 
   function openLightbox(img){
     lightboxImg.src = img.src;
@@ -731,29 +419,29 @@ function initImageLightbox(){
     dialog.showModal();
   }
 
-
   function closeLightbox(){
     dialog.close();
     lightboxImg.removeAttribute('src');
   }
 
-
-  document
-    .querySelectorAll('.hero-img')
-    .forEach(hero=>{
-      const img = hero.querySelector('img');
-      hero.addEventListener('click', ()=>openLightbox(img));
-    });
-
+  document.querySelectorAll('.hero-img').forEach(hero=>{
+    const img = hero.querySelector('img');
+    hero.addEventListener('click', ()=>openLightbox(img));
+  });
 
   closeBtn.addEventListener('click', closeLightbox);
 }
 
-
-// Inicialización al cargar la página
 buildTrap();
 buildFlujo();
 updateMatrix();
 animateError('diff');
 animateError('int');
 initImageLightbox();
+
+window.addEventListener('resize', () => {
+  if(trapChart) trapChart.resize();
+  if(flujoChart) flujoChart.resize();
+  if(diffErrorChart) diffErrorChart.resize();
+  if(intErrorChart) intErrorChart.resize();
+});
