@@ -297,8 +297,6 @@ const chatBox = document.getElementById('chatBox');
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
 
-const GROQ_API_KEY = "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";
-
 function addMessage(text, role='bot'){
   const div = document.createElement('div');
   div.className = `msg ${role}`;
@@ -359,19 +357,7 @@ chatForm.addEventListener('submit', async (e) => {
   thinking.textContent='Pensando...';
   chatBox.appendChild(thinking);
 
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: `Eres un tutor especializado UNICAMENTE en métodos numéricos. 
+  const systemPrompt = `Eres un tutor especializado UNICAMENTE en métodos numéricos. 
 Tu tarea es explicar y responder preguntas sobre:
 - Regla del trapecio compuesto
 - Flujo vehicular y derivadas (progresiva, regresiva, centrar)
@@ -384,8 +370,25 @@ IMPORTANTE: Si el usuario pregunta sobre cualquier otro tema que no esté relaci
 
 "⚠️ Solo puedo ayudarte con temas de métodos numéricos y el contenido de esta página. ¿Tienes alguna pregunta sobre integrales, derivadas numéricas o los programas aquí incluidos?"
 
-NO respondas a preguntas sobre otros temas aunque el usuario insista.`
-          },
+NO respondas a preguntas sobre otros temas aunque el usuario insista.`;
+
+  if (typeof API_KEY === 'undefined' || !API_KEY || API_KEY === 'YOUR_GROQ_API_KEY') {
+    thinking.remove();
+    addMessage('Falta la clave API. Copia config.example.js a config.js y pon tu clave de console.groq.com', 'bot');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: q }
         ],
         temperature: 0.7,
@@ -394,7 +397,12 @@ NO respondas a preguntas sobre otros temas aunque el usuario insista.`
       })
     });
 
-    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Clave API inválida o revocada. Crea una nueva en https://console.groq.com y actualiza config.js');
+      }
+      throw new Error(`API Error: ${response.status}`);
+    }
 
     const data = await response.json();
     const answer = data?.choices?.[0]?.message?.content?.trim() || 'No hubo respuesta.';
@@ -404,7 +412,7 @@ NO respondas a preguntas sobre otros temas aunque el usuario insista.`
   } catch(err) {
     thinking.remove();
     console.error('Error chat:', err);
-    addMessage('Error de conexión con la IA. Revisa la consola (F12).', 'bot');
+    addMessage(err.message || 'Error de conexión con la IA. Revisa la consola (F12).', 'bot');
   }
 });
 
