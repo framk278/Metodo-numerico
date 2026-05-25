@@ -297,6 +297,9 @@ const chatBox = document.getElementById('chatBox');
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
 
+const GROQ_API_KEY = (typeof API_KEY === 'string' ? API_KEY : '').trim()
+  || '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';
+
 function addMessage(text, role='bot'){
   const div = document.createElement('div');
   div.className = `msg ${role}`;
@@ -372,9 +375,9 @@ IMPORTANTE: Si el usuario pregunta sobre cualquier otro tema que no esté relaci
 
 NO respondas a preguntas sobre otros temas aunque el usuario insista.`;
 
-  if (typeof API_KEY === 'undefined' || !API_KEY || API_KEY === 'YOUR_GROQ_API_KEY') {
+  if (!GROQ_API_KEY || GROQ_API_KEY === 'YOUR_GROQ_API_KEY') {
     thinking.remove();
-    addMessage('Falta la clave API. Copia config.example.js a config.js y pon tu clave de console.groq.com', 'bot');
+    addMessage('Falta la clave API de Groq.', 'bot');
     return;
   }
 
@@ -382,7 +385,7 @@ NO respondas a preguntas sobre otros temas aunque el usuario insista.`;
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
